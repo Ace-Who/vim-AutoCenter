@@ -1,9 +1,3 @@
-" Set the 'cpoptions' option to its Vim default value and restore it later.
-" This is to enable line-continuation within this script.
-" Refer to :help use-cpo-save.
-let s:save_cpoptions = &cpoptions
-set cpoptions&vim
-
 if !exists('g:AutoCenter_On')
   let g:AutoCenter_On = 0
 endif
@@ -16,10 +10,10 @@ function! AutoCenter#On()
     echohl NONE
     return
   endif
-  silent SaveMapping '<Esc>', 'i', 'global'
-  silent SaveMapping '<CR>', 'i', 'global'
-  inoremap <Esc> <Esc>:center<CR>
-  inoremap <CR> <CR><C-\><C-O>:-1center<CR>
+  augroup AutoCenter
+    autocmd!
+    autocmd TextChanged,TextChangedI * call s:center()
+  augroup END
   unlockvar g:AutoCenter_On
   let g:AutoCenter_On = 1
   lockvar g:AutoCenter_On
@@ -32,15 +26,30 @@ function! AutoCenter#Off()
     echohl NONE
     return
   endif
-  iunmap <Esc>
-  iunmap <CR>
+  augroup AutoCenter
+    autocmd!
+  augroup END
   unlockvar g:AutoCenter_On
   let g:AutoCenter_On = 0
   lockvar g:AutoCenter_On
-  silent LoadMapping '<Esc>', 'i', 'global'
-  silent LoadMapping '<CR>', 'i', 'global'
 endfunction
 
-let &cpoptions = s:save_cpoptions
-unlet s:save_cpoptions
+function! s:isUndoRedo()
+  let l:maxChangeNr = split(split(execute('undolist'), "\n")[-1], ' \+')[0]
+  return changenr() < l:maxChangeNr
+endfunction
 
+function! s:center()
+  " !!Warning!! Undo and redo also change the text, triggering the AutoCenter
+  " autocmd, which changes the effect of undo and BREAKS REDO if this function
+  " changes the text. So return early in this case.
+  if s:isUndoRedo() | return | endif
+  " Remember the cursor position relative to current indent for restoring after
+  " center the line.
+  let l:curpos = col('.') - indent('.')
+  center
+  " Put cursor back on the same char on which it is before centering.
+  call cursor('.', l:curpos + indent('.'))
+endfunction
+
+" Todo: ues '=' to center lines in normal and visual mode.
