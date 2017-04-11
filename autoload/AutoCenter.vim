@@ -11,7 +11,7 @@ if !exists('g:AutoCenter_On')
 endif
 lockvar g:AutoCenter_On
 
-function! AutoCenter#On()
+function! AutoCenter#On() "{{{
   if g:AutoCenter_On
     echohl Error
     echo 'AutoCenter is already on.'
@@ -27,15 +27,23 @@ function! AutoCenter#On()
     \ if !s:isUndoRedo() | call s:center() | endif
   augroup END
   " Ues '=' key to center lines in Normal and Visual mode.
+  " Save the mappings first for restoring when turning off AutoCenter.
+  " This requires the 'SaveMapping' plugin
+  " (https://github.com/Ace-Who/vim-SaveLoadMapping).
+  if exists(':SaveMapping') == 2
+    silent SaveMapping '=', 'n', 'global'
+    silent SaveMapping '==', 'n', 'global'
+    silent SaveMapping '=', 'x', 'global'
+  endif
   nnoremap <silent> = :set opfunc=<SID>opCenter<CR>g@
   nnoremap <silent> == :center<CR>
   xnoremap <silent> = :center<CR>
   unlockvar g:AutoCenter_On
   let g:AutoCenter_On = 1
   lockvar g:AutoCenter_On
-endfunction
+endfunction "}}}
 
-function! AutoCenter#Off()
+function! AutoCenter#Off() "{{{
   if !g:AutoCenter_On
     echohl Error
     echo 'AutoCenter is already off.'
@@ -48,28 +56,35 @@ function! AutoCenter#Off()
   nunmap =
   nunmap ==
   xunmap =
+  " Restore the mappings saved earlier. This requires the 'SaveMapping' plugin
+  " (https://github.com/Ace-Who/vim-SaveLoadMapping).
+  if exists(':LoadMapping') == 2
+    silent LoadMapping '=', 'n', 'global'
+    silent LoadMapping '==', 'n', 'global'
+    silent LoadMapping '=', 'x', 'global'
+  endif
   unlockvar g:AutoCenter_On
   let g:AutoCenter_On = 0
   lockvar g:AutoCenter_On
-endfunction
+endfunction "}}}
 
-function! s:center()
+function! s:center() "{{{
   " Remember the cursor position relative to current indent for restoring after
   " centering the line.
   let l:curpos = col('.') - indent('.')
   center
   " Put cursor back on the same char it is on before centering.
   call cursor('.', l:curpos + indent('.'))
-endfunction
+endfunction "}}}
 
-function! s:isUndoRedo()
+function! s:isUndoRedo() "{{{
   let l:maxChangeNr = split(split(execute('undolist'), "\n")[-1], ' \+')[0]
   return changenr() < l:maxChangeNr
-endfunction
+endfunction "}}}
 
-function! s:opCenter(type)
+function! s:opCenter(type) "{{{
   '[,']center
-endfunction
+endfunction "}}}
 
 " Restore 'cpoptions' setting {{{
 let &cpoptions = s:save_cpoptions
