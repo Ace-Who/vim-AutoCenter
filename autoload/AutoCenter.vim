@@ -58,6 +58,8 @@ endfunction "}}}
 function! s:isUndoRedo() "{{{
   let l:undolist = split(execute('undolist'), "\n")
   let l:maxChangeNr = split(l:undolist[-1], ' \+')[0]
+  " known bug: a redo reaching the lastest change makes changenr() equal to
+  " l:maxChangeNr.
   return changenr() < l:maxChangeNr
 endfunction "}}}
 
