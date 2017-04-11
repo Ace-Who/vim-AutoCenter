@@ -20,16 +20,16 @@ function! AutoCenter#On() "{{{
   endif
   augroup AutoCenter
     autocmd!
-    " !!Warning!! Undo and redo also change the text, triggering the AutoCenter
+    " !!Note!! Undo and redo also change the text, triggering the AutoCenter
     " autocmd, which changes the effect of undo and BREAKS REDO if this command
-    " changes the text. So we don't center text in this case.
+    " changes the text. So we don't center text in these cases.
     autocmd TextChanged,TextChangedI *
     \ if !s:isUndoRedo() | call s:center() | endif
   augroup END
   " Ues '=' key to center lines in Normal and Visual mode.
   " Save the mappings first for restoring when turning off AutoCenter.
   " This requires the 'SaveMapping' plugin
-  " (https://github.com/Ace-Who/vim-SaveLoadMapping).
+  " (https://github.com/Ace-Who/vim-MappingMem).
   if exists(':SaveMapping') == 2
     silent SaveMapping '=', 'n', 'global'
     silent SaveMapping '==', 'n', 'global'
@@ -57,7 +57,7 @@ function! AutoCenter#Off() "{{{
   nunmap ==
   xunmap =
   " Restore the mappings saved earlier. This requires the 'SaveMapping' plugin
-  " (https://github.com/Ace-Who/vim-SaveLoadMapping).
+  " (https://github.com/Ace-Who/vim-MappingMem).
   if exists(':LoadMapping') == 2
     silent LoadMapping '=', 'n', 'global'
     silent LoadMapping '==', 'n', 'global'

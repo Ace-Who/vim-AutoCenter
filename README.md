@@ -4,7 +4,7 @@ When enabled, center the current line automatically.
 
 ## Dependency
 
-[`SaveLoadMapping`](https://github.com/Ace-Who/vim-SaveLoadMapping) plugin. This
+[`SaveLoadMapping`](https://github.com/Ace-Who/vim-MappingMem) plugin. This
 is not necessary but recommended, which can restore the mappings overriden by
 `AutoCenter` when you turn it off.
 
