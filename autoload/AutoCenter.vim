@@ -20,27 +20,15 @@ function! AutoCenter#On() "{{{
   endif
   augroup AutoCenter
     autocmd!
-    " !!Note!! Undo and redo also change the text, triggering the AutoCenter
-    " autocmd, which changes the effect of undo and BREAKS REDO if this command
-    " changes the text. So we don't center text in these cases.
+    " !!Note!! Undo and redo also change the text, triggering this autocmd,
+    " which changes the effect of undo and BREAKS further REDO if making new
+    " text changes. So we don't center text in these cases.
     autocmd TextChanged,TextChangedI *
     \ if !s:isUndoRedo() | call s:center() | endif
   augroup END
-  " Ues '=' key to center lines in Normal and Visual mode.
-  " Save the mappings first for restoring when turning off AutoCenter.
-  " This requires the 'SaveMapping' plugin
-  " (https://github.com/Ace-Who/vim-MappingMem).
-  if exists(':SaveMapping') == 2
-    silent SaveMapping '=', 'n', 'global'
-    silent SaveMapping '==', 'n', 'global'
-    silent SaveMapping '=', 'x', 'global'
-  endif
-  nnoremap <silent> = :set opfunc=<SID>opCenter<CR>g@
-  nnoremap <silent> == :center<CR>
-  xnoremap <silent> = :center<CR>
-  unlockvar g:AutoCenter_On
-  let g:AutoCenter_On = 1
-  lockvar g:AutoCenter_On
+  call s:saveMapping() " Save mappings for later restoring.
+  call s:addMapping()
+  call s:flagState(1)
 endfunction "}}}
 
 function! AutoCenter#Off() "{{{
@@ -53,19 +41,9 @@ function! AutoCenter#Off() "{{{
   augroup AutoCenter
     autocmd!
   augroup END
-  nunmap =
-  nunmap ==
-  xunmap =
-  " Restore the mappings saved earlier. This requires the 'SaveMapping' plugin
-  " (https://github.com/Ace-Who/vim-MappingMem).
-  if exists(':LoadMapping') == 2
-    silent LoadMapping '=', 'n', 'global'
-    silent LoadMapping '==', 'n', 'global'
-    silent LoadMapping '=', 'x', 'global'
-  endif
-  unlockvar g:AutoCenter_On
-  let g:AutoCenter_On = 0
-  lockvar g:AutoCenter_On
+  call s:delMapping()
+  call s:loadMapping() " Restore the mappings saved earlier.
+  call s:flagState(0)
 endfunction "}}}
 
 function! s:center() "{{{
@@ -78,12 +56,52 @@ function! s:center() "{{{
 endfunction "}}}
 
 function! s:isUndoRedo() "{{{
-  let l:maxChangeNr = split(split(execute('undolist'), "\n")[-1], ' \+')[0]
+  let l:undolist = split(execute('undolist'), "\n")
+  let l:maxChangeNr = split(l:undolist[-1], ' \+')[0]
   return changenr() < l:maxChangeNr
 endfunction "}}}
 
 function! s:opCenter(type) "{{{
   '[,']center
+endfunction "}}}
+
+function! s:addMapping() "{{{
+  " Ues '=' key to center lines in Normal and Visual mode.
+  nnoremap <silent> = :set opfunc=<SID>opCenter<CR>g@
+  nnoremap <silent> == :center<CR>
+  xnoremap <silent> = :center<CR>
+endfunction "}}}
+
+function! s:delMapping() "{{{
+  nunmap =
+  nunmap ==
+  xunmap =
+endfunction "}}}
+
+function! s:loadMapping() "{{{
+  " This requires the 'SaveMapping' plugin
+  " (https://github.com/Ace-Who/vim-MappingMem).
+  if exists(':LoadMapping') == 2
+    silent LoadMapping '=', 'n', 'global'
+    silent LoadMapping '==', 'n', 'global'
+    silent LoadMapping '=', 'x', 'global'
+  endif
+endfunction "}}}
+
+function! s:saveMapping() "{{{
+  " This requires the 'SaveMapping' plugin
+  " (https://github.com/Ace-Who/vim-MappingMem).
+  if exists(':SaveMapping') == 2
+    silent SaveMapping '=', 'n', 'global'
+    silent SaveMapping '==', 'n', 'global'
+    silent SaveMapping '=', 'x', 'global'
+  endif
+endfunction "}}}
+
+function! s:flagState(state) "{{{
+  unlockvar g:AutoCenter_On
+  let g:AutoCenter_On = a:state
+  lockvar g:AutoCenter_On
 endfunction "}}}
 
 " Restore 'cpoptions' setting {{{
