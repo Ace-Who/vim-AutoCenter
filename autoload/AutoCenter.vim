@@ -23,7 +23,7 @@ function! AutoCenter#On() "{{{
   augroup END
   call s:saveMapping() " Save mappings for later restoring.
   call s:addMapping()
-  call s:flagState(1)
+  call s:markState(1)
 endfunction "}}}
 
 function! AutoCenter#Off() "{{{
@@ -38,7 +38,7 @@ function! AutoCenter#Off() "{{{
   augroup END
   call s:delMapping()
   call s:loadMapping() " Restore the mappings saved earlier.
-  call s:flagState(0)
+  call s:markState(0)
 endfunction "}}}
 
 function! s:center() "{{{
@@ -95,13 +95,13 @@ function! s:saveMapping() "{{{
   endif
 endfunction "}}}
 
-function! s:flagState(state) "{{{
+function! s:markState(state) "{{{
   unlockvar g:AutoCenter_On
   let g:AutoCenter_On = a:state
   lockvar g:AutoCenter_On
 endfunction "}}}
 
-if !exists('g:AutoCenter_On') | call s:flagState(0) | endif
+if !exists('g:AutoCenter_On') | call s:markState(0) | endif
 
 " Restore 'cpoptions' setting {{{
 let &cpoptions = s:save_cpoptions
