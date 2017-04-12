@@ -54,8 +54,9 @@ function! s:center() "{{{
   center
   " Put cursor back on the same char it is on before centering.
   call cursor('.', l:curpos + indent('.'))
-  " A change in Insert mode or Replace mode is in progress.
-  " Only update the max change number when a change is done.
+  " An ongoing change in Insert mode or Replace mode is not taken as a new
+  " change if updating the 'b:AutoCenter_MaxChangeNr' during this time. To avoid
+  " this, wait until it is done.
   if mode() !~ '^[iR]'
     call s:upMaxChangeNr()
   endif

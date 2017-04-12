@@ -19,8 +19,3 @@ When enabled,
 operation, so it doesn't affect them.
 - `=` key acts like its default behavior except that it centers lines instead of
 indenting them.
-
-## Known bugs
-
-A redo reaching the latest change is taken as a new change, causing the autocmd
-centering current line.
