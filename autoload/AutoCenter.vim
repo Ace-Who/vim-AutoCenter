@@ -20,7 +20,7 @@ function! AutoCenter#On() "{{{
     " text changes. So we don't center text in these cases.
     autocmd TextChanged,TextChangedI *
     \ if !s:isUndoRedo() | call s:center() | endif
-    autocmd BufEnter * call s:upMaxChangeNr()
+    autocmd BufEnter,InsertLeave * call s:upMaxChangeNr()
   augroup END
   call s:upMaxChangeNr()
   call s:saveMapping() " Save mappings for later restoring.
@@ -56,7 +56,7 @@ function! s:center() "{{{
   call cursor('.', l:curpos + indent('.'))
   " An ongoing change in Insert mode or Replace mode is not taken as a new
   " change if updating the 'b:AutoCenter_MaxChangeNr' during this time. To avoid
-  " this, wait until it is done.
+  " this, wait until it is done, i.e., the autocmd event 'InsertLeave' occurs.
   if mode() !~ '^[iR]'
     call s:upMaxChangeNr()
   endif
