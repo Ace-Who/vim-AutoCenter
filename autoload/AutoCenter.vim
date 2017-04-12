@@ -20,7 +20,9 @@ function! AutoCenter#On() "{{{
     " text changes. So we don't center text in these cases.
     autocmd TextChanged,TextChangedI *
     \ if !s:isUndoRedo() | call s:center() | endif
+    autocmd BufEnter * call s:upMaxChangeNr()
   augroup END
+  call s:upMaxChangeNr()
   call s:saveMapping() " Save mappings for later restoring.
   call s:addMapping()
   call s:markState(1)
@@ -41,6 +43,10 @@ function! AutoCenter#Off() "{{{
   call s:markState(0)
 endfunction "}}}
 
+function! s:isUndoRedo() "{{{
+  return changenr() <= b:AutoCenter_MaxChangeNr
+endfunction "}}}
+
 function! s:center() "{{{
   " Remember the cursor position relative to current indent for restoring after
   " centering the line.
@@ -48,14 +54,11 @@ function! s:center() "{{{
   center
   " Put cursor back on the same char it is on before centering.
   call cursor('.', l:curpos + indent('.'))
-endfunction "}}}
-
-function! s:isUndoRedo() "{{{
-  let l:undolist = split(execute('undolist'), "\n")
-  let l:maxChangeNr = split(l:undolist[-1], ' \+')[0]
-  " known bug: a redo reaching the lastest change makes changenr() equal to
-  " l:maxChangeNr.
-  return changenr() < l:maxChangeNr
+  " A change in Insert mode or Replace mode is in progress.
+  " Only update the max change number when a change is done.
+  if mode() !~ '^[iR]'
+    call s:upMaxChangeNr()
+  endif
 endfunction "}}}
 
 function! s:opCenter(type) "{{{
@@ -99,6 +102,13 @@ function! s:markState(state) "{{{
   unlockvar g:AutoCenter_On
   let g:AutoCenter_On = a:state
   lockvar g:AutoCenter_On
+endfunction "}}}
+
+function! s:upMaxChangeNr() "{{{
+  unlockvar b:AutoCenter_MaxChangeNr
+  let l:undolist = split(execute('undolist'), "\n")
+  let b:AutoCenter_MaxChangeNr = split(l:undolist[-1], ' \+')[0]
+  lockvar b:AutoCenter_MaxChangeNr
 endfunction "}}}
 
 if !exists('g:AutoCenter_On') | call s:markState(0) | endif
