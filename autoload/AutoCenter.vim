@@ -6,11 +6,6 @@ let s:save_cpoptions = &cpoptions
 set cpoptions&vim
 " }}}
 
-if !exists('g:AutoCenter_On')
-  let g:AutoCenter_On = 0
-endif
-lockvar g:AutoCenter_On
-
 function! AutoCenter#On() "{{{
   if g:AutoCenter_On
     echohl Error
@@ -105,6 +100,8 @@ function! s:flagState(state) "{{{
   let g:AutoCenter_On = a:state
   lockvar g:AutoCenter_On
 endfunction "}}}
+
+if !exists('g:AutoCenter_On') | call s:flagState(0) | endif
 
 " Restore 'cpoptions' setting {{{
 let &cpoptions = s:save_cpoptions
