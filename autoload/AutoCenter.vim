@@ -24,7 +24,7 @@ function! AutoCenter#On() "{{{
   augroup END
   call s:upMaxChangeNr()
   call s:saveMapping() " Save mappings for later restoring.
-  call s:addMapping()
+  call s:setMapping()
   call s:markState(1)
 endfunction "}}}
 
@@ -66,11 +66,18 @@ function! s:opCenter(type) "{{{
   '[,']center
 endfunction "}}}
 
-function! s:addMapping() "{{{
+function! s:setMapping() "{{{
   " Ues '=' key to center lines in Normal and Visual mode.
   nnoremap <silent> = :set opfunc=<SID>opCenter<CR>g@
   nnoremap <silent> == :center<CR>
   xnoremap <silent> = :center<CR>
+  " In Insert mode vim doesn't update the value of line() and getline() after
+  " typing <CR> if <CR> has some kind of mapping, making the new lines being
+  " ignored. So we have to unmap it.
+  " Notice unmap command seems not to take '<CR>', so use '^M' instead.
+  " silent! iunmap ^M
+  " Or use this:
+  silent! inoremap <CR> <CR>
 endfunction "}}}
 
 function! s:delMapping() "{{{
@@ -86,6 +93,7 @@ function! s:loadMapping() "{{{
     silent LoadMapping '=', 'n', 'global'
     silent LoadMapping '==', 'n', 'global'
     silent LoadMapping '=', 'x', 'global'
+    silent LoadMapping '<CR>', 'i', 'global'
   endif
 endfunction "}}}
 
@@ -96,6 +104,7 @@ function! s:saveMapping() "{{{
     silent SaveMapping '=', 'n', 'global'
     silent SaveMapping '==', 'n', 'global'
     silent SaveMapping '=', 'x', 'global'
+    silent SaveMapping '<CR>', 'i', 'global'
   endif
 endfunction "}}}
 
