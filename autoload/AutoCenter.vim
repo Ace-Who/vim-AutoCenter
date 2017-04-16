@@ -71,13 +71,12 @@ function! s:setMapping() "{{{
   nnoremap <silent> = :set opfunc=<SID>opCenter<CR>g@
   nnoremap <silent> == :center<CR>
   xnoremap <silent> = :center<CR>
-  " In Insert mode vim doesn't update the value of line() and getline() after
-  " typing <CR> if <CR> has some kind of mapping, making the new lines being
-  " ignored. So we have to unmap it.
-  " Notice unmap command seems not to take '<CR>', so use '^M' instead.
-  " silent! iunmap ^M
-  " Or use this:
-  silent! inoremap <CR> <CR>
+
+  " In Insert mode with some kind of mapping for <CR> existing, Vim doesn't
+  " update the value of line() and getline() after typing <CR>, making the new
+  " lines ignored. So we have to unmap it.
+  silent! iunmap <CR>
+
 endfunction "}}}
 
 function! s:delMapping() "{{{
